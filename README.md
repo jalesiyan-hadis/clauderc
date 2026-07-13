@@ -17,7 +17,7 @@ Everything here is generic and reusable. The author's own org/machine-specific v
 ## Install
 
 ```
-/plugin marketplace add hadisjalesiyan/clauderc
+/plugin marketplace add jalesiyan-hadis/clauderc
 /plugin install clauderc@clauderc
 /plugin install claude-spec-kit@clauderc
 ```
@@ -60,6 +60,25 @@ to `~/.claude/clauderc.private.json` and fill in your values:
 If the file is absent, the skills degrade gracefully: `scratch` falls back to local project
 scope, and `create-jira-ticket` stops with a message telling you which values to set. Nothing
 crashes and no placeholder values are used.
+
+## Updating
+
+The plugins are **copied** into a version-keyed plugin cache on install
+(`~/.claude/plugins/cache/clauderc/…`) — they are *not* run live from this checkout. So editing
+files here does **not** change what Claude runs until you update the plugin:
+
+```
+/plugin update clauderc
+/plugin update claude-spec-kit
+```
+
+Because the cache is keyed by version, the reliable way to force a refresh after changing plugin
+prompts/hooks is to **bump `version`** in the plugin's `.claude-plugin/plugin.json` (keep
+`.claude-plugin/marketplace.json` in sync), commit, then run `/plugin update`. If an update ever
+doesn't take effect, remove and reinstall the plugin. Restart Claude Code to load the new version.
+
+Your `~/.claude/clauderc.private.json` is separate config, not part of the plugin — edits to it
+take effect on the next session start, no plugin update needed.
 
 ## License
 
