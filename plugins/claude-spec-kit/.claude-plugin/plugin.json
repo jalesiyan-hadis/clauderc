@@ -1,0 +1,12 @@
+{
+  "name": "claude-spec-kit",
+  "description": "Spec-driven development for Claude Code: an interview-driven spec-define skill, a gated TDD spec-implement skill with an optional autonomous completion loop, and a read-only spec-reviewer conformance agent.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Hadis Jalesiyan"
+  },
+  "homepage": "https://github.com/hadisjalesiyan/clauderc/tree/main/plugins/claude-spec-kit",
+  "repository": "https://github.com/hadisjalesiyan/clauderc",
+  "license": "MIT",
+  "keywords": ["spec", "tdd", "workflow", "spec-driven-development", "skills"]
+}

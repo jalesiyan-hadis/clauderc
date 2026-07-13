@@ -1,0 +1,22 @@
+{
+  "_comment": "Copy to .claude/spec-workflow.json in your project and edit. All keys are optional; anything omitted is auto-detected from your project's manifest (pyproject.toml / package.json / go.mod / Cargo.toml) or falls back to a built-in default. If no key and no recognized stack supply a runnable test_fast, the autonomous loop safe-disarms.",
+  "test_fast": "poetry run pytest -q -x",
+  "test_full": "poetry run pytest --cov",
+  "lint": "poetry run pre-commit run --all-files",
+  "lint_file": "poetry run pre-commit run --files {file}",
+  "commit_prefix": "feat",
+  "ticket_regex": "[A-Z]{2,}-\\d+",
+  "safe_bash_prefixes": [
+    "git add",
+    "git commit",
+    "git status",
+    "git diff",
+    "git log",
+    "git rev-parse",
+    "git restore --staged",
+    "poetry run pytest",
+    "poetry run pre-commit"
+  ],
+  "protected_paths": [".env", "migrations/", "credentials", "service-account"],
+  "spec_dir": ".claude/spec"
+}

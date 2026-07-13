@@ -1,0 +1,19 @@
+{
+  "name": "clauderc",
+  "description": "Hadis Jalesiyan's personal Claude Code toolkit: a config-driven Jira/scratchpad plugin and a spec-driven-development plugin.",
+  "owner": {
+    "name": "Hadis Jalesiyan"
+  },
+  "plugins": [
+    {
+      "name": "clauderc",
+      "source": "./plugins/clauderc",
+      "description": "A Claude Code toolkit: a research scratchpad browser and a config-driven Jira ticket creator, plus a desktop notification hook. Org/personal values are read from a gitignored ~/.claude/clauderc.private.json."
+    },
+    {
+      "name": "claude-spec-kit",
+      "source": "./plugins/claude-spec-kit",
+      "description": "Spec-driven development workflow: spec-define + spec-implement skills, spec-reviewer agent, and an optional autonomous TDD loop."
+    }
+  ]
+}

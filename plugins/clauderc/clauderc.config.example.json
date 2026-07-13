@@ -1,0 +1,25 @@
+{
+  "_comment": "Copy this file to ~/.claude/clauderc.private.json and fill in your own values. It is user-level (org/personal-wide), NOT per-project. The clauderc plugin's create-jira-ticket and scratch skills read it at runtime. Keep it out of any public repo. If it is absent, the skills degrade gracefully: scratch falls back to local-only scope, and create-jira-ticket stops and tells you which values to set.",
+  "jira": {
+    "cloudId": "00000000-0000-0000-0000-000000000000",
+    "projectKey": "ABC",
+    "site": "https://your-org.atlassian.net",
+    "teams": {
+      "TeamOne": "00000000-0000-0000-0000-000000000000",
+      "TeamTwo": "00000000-0000-0000-0000-000000000000"
+    },
+    "epics": {
+      "internallyFoundBugs": "ABC-0000"
+    },
+    "epicGuideUrl": "https://www.notion.so/your-org/the-right-epic-when-creating-tickets",
+    "fields": {
+      "sprint": "customfield_10020",
+      "team": "customfield_10001",
+      "epic": "customfield_10014"
+    }
+  },
+  "scratch": {
+    "vaultPath": "/absolute/path/to/your/notes/vault"
+  },
+  "ticketPrefix": "ABC"
+}
