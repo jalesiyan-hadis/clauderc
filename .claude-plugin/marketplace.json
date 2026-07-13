@@ -8,7 +8,7 @@
     {
       "name": "clauderc",
       "source": "./plugins/clauderc",
-      "description": "A Claude Code toolkit: a research scratchpad browser and a config-driven Jira ticket creator, plus a desktop notification hook. Org/personal values are read from a gitignored ~/.claude/clauderc.private.json."
+      "description": "A Claude Code toolkit: a research scratchpad browser and saver, a config-driven Jira ticket creator, plus a desktop notification hook. Org/personal values are read from a gitignored ~/.claude/clauderc.private.json."
     },
     {
       "name": "claude-spec-kit",

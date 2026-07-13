@@ -1,6 +1,6 @@
 ---
-name: scratch
-description: List or search saved research scratchpad threads (personal reference, not KB or project docs). Use when the user runs /scratch or asks to find/resume/review a previously saved investigation thread.
+name: scratch-list
+description: List or search saved research scratchpad threads (personal reference, not KB or project docs). Use when the user runs /clauderc:scratch-list or asks to find/resume/review a previously saved investigation thread.
 argument-hint: [optional keyword or topic to filter by]
 ---
 

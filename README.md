@@ -3,9 +3,9 @@
 A personal [Claude Code](https://claude.com/claude-code) plugin marketplace, built the native
 way — no dotfile symlink farms, no hand-rolled command prefixes. Two plugins:
 
-- **`clauderc`** — a small toolkit: a research-scratchpad browser (`/clauderc:scratch`), a
-  config-driven Jira ticket creator (`/clauderc:create-jira-ticket`), and a desktop
-  notification hook.
+- **`clauderc`** — a small toolkit: a research-scratchpad browser and saver
+  (`/clauderc:scratch-list`, `/clauderc:scratch-save`), a config-driven Jira ticket creator
+  (`/clauderc:create-jira-ticket`), and a desktop notification hook.
 - **`claude-spec-kit`** — spec-driven development: an interview-driven `spec-define`, a gated
   TDD `spec-implement` with an optional autonomous completion loop, and a read-only
   `spec-reviewer` conformance agent.
@@ -28,12 +28,12 @@ Or, from a local checkout:
 /plugin marketplace add ~/Codes/clauderc
 ```
 
-Commands after install: `/clauderc:scratch`, `/clauderc:create-jira-ticket`,
-`/claude-spec-kit:spec-define`, `/claude-spec-kit:spec-implement`.
+Commands after install: `/clauderc:scratch-list`, `/clauderc:scratch-save`,
+`/clauderc:create-jira-ticket`, `/claude-spec-kit:spec-define`, `/claude-spec-kit:spec-implement`.
 
 ## Configuration — `~/.claude/clauderc.private.json`
 
-The `scratch` and `create-jira-ticket` skills ship generic: they contain the *how*, and read
+The `scratch-list`, `scratch-save`, and `create-jira-ticket` skills ship generic: they contain the *how*, and read
 the *values* from a user-level config file at `~/.claude/clauderc.private.json`. This file is
 org/user-wide (Jira board, vault path), deliberately unlike spec-kit's per-project
 `.claude/spec-workflow.json`.
@@ -57,9 +57,9 @@ to `~/.claude/clauderc.private.json` and fill in your values:
 }
 ```
 
-If the file is absent, the skills degrade gracefully: `scratch` falls back to local project
-scope, and `create-jira-ticket` stops with a message telling you which values to set. Nothing
-crashes and no placeholder values are used.
+If the file is absent, the skills degrade gracefully: `scratch-list` falls back to local project
+scope, `scratch-save` defaults to local scope, and `create-jira-ticket` stops with a message
+telling you which values to set. Nothing crashes and no placeholder values are used.
 
 ## Updating
 

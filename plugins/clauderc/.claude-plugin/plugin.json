@@ -1,7 +1,7 @@
 {
   "name": "clauderc",
-  "description": "A Claude Code toolkit: a research-scratchpad browser (/clauderc:scratch), a config-driven Jira ticket creator (/clauderc:create-jira-ticket), and a desktop notification hook. Org/personal values are read from a gitignored ~/.claude/clauderc.private.json.",
-  "version": "0.1.0",
+  "description": "A Claude Code toolkit: a research-scratchpad browser and saver (/clauderc:scratch-list, /clauderc:scratch-save), a config-driven Jira ticket creator (/clauderc:create-jira-ticket), and a desktop notification hook. Org/personal values are read from a gitignored ~/.claude/clauderc.private.json.",
+  "version": "0.2.0",
   "author": {
     "name": "Hadis Jalesiyan"
   },
