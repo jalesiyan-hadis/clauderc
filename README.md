@@ -1,7 +1,6 @@
 # clauderc
 
-A personal [Claude Code](https://claude.com/claude-code) plugin marketplace, built the native
-way — no dotfile symlink farms, no hand-rolled command prefixes. Two plugins:
+A personal [Claude Code](https://claude.com/claude-code) plugin marketplace. Two plugins:
 
 - **`clauderc`** — a small toolkit: a research-scratchpad browser and saver
   (`/clauderc:scratch-list`, `/clauderc:scratch-save`), a config-driven Jira ticket creator
