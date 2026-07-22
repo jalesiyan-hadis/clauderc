@@ -37,6 +37,9 @@ substitute the resolved config value.
 
 Derive the commit message format: `{commit_prefix}({ticket}): <desc>` when a
 ticket matches the branch, else `{commit_prefix}: <desc>` (Conventional Commits).
+Choose the **type from the commit's actual content**: a test-only commit is
+`test`, a docs-only commit is `docs`, etc. `{commit_prefix}` (default `feat`) is
+the type for the *implementation* commit — not a fixed prefix for every checkpoint.
 
 ## Phase 1 — Plan + test scenarios (HUMAN-GATED)
 
@@ -64,7 +67,13 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
    If the spec's approach is heavier than the minimal fix, plan the minimal fix
    and note in the plan why it supersedes the spec's suggestion.
 4. If anything is ambiguous, ASK the user now — this is the only phase where
-   you ask questions.
+   you ask questions. Cadence:
+   - If an answer determines your *next* question (true branching), ask it
+     alone, wait, then continue.
+   - Batch independent, closed confirmations into one `AskUserQuestion` call
+     (max ~3-4 questions), each with your recommended answer.
+   - For open design questions you can attach a recommendation to, prefer one
+     per turn so the user ratifies rather than drafting from scratch.
 5. Produce a plan covering:
    - Files created/modified, with per-file changes.
    - New function signatures and the data flow between them.
@@ -84,13 +93,18 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
 
 8. Write tests first for every approved scenario. Encode exactly the approved
    cases — no extra scope. NO mock implementations of the thing under test and
-   no stubbed-out imaginary code.
+   no stubbed-out imaginary code. Traceability (AC ids, ticket ids, scenario
+   numbers) belongs in the plan/spec test-mapping table and in descriptive test
+   names — **never in code comments or docstrings**. Keep comments short and
+   useful: explain behavior/intent ("only same-source groups are reused"), not
+   spec references.
 9. Run them and confirm they ALL fail for the right reason (missing behavior,
    not import/syntax errors): `{test_fast}` scoped to the new test paths.
 10. Run the linter, then commit the failing tests as a checkpoint:
    `{lint}`
-   `{commit_prefix}(<ticket>): add failing tests for <feature>` (use the
-   branch's ticket if any).
+   `test(<ticket>): add failing tests for <feature>` (use the branch's ticket
+   if any). This checkpoint is test-only, so the type is `test`, not
+   `{commit_prefix}`.
 
 ## Phase 3 — Implement to green (Red → Green → Refactor)
 

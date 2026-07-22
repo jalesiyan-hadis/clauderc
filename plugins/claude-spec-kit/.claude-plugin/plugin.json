@@ -1,7 +1,7 @@
 {
   "name": "claude-spec-kit",
   "description": "Spec-driven development for Claude Code: an interview-driven spec-define skill, a gated TDD spec-implement skill with an optional autonomous completion loop, and a read-only spec-reviewer conformance agent.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Hadis Jalesiyan"
   },
