@@ -29,6 +29,15 @@ import _config  # noqa: E402
 # shell features that could chain a second command past an allowed prefix
 UNSAFE_SHELL = ("&&", "||", ";", "|", "`", "$(", ">", "<", "\n")
 
+# The one plugin command the loop runs (step 16): read-only, so it is matched
+# exactly — expanded path or the unexpanded ${CLAUDE_PLUGIN_ROOT} form.
+_CONFIG_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_config.py")
+STANDARDS_CMDS = {
+    f'python3 "{_CONFIG_PY}" --standards',
+    f"python3 {_CONFIG_PY} --standards",
+    'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --standards',
+}
+
 
 def allow(reason: str) -> None:
     print(
@@ -81,6 +90,8 @@ def main() -> None:
         cmd = (ti.get("command") or "").strip()
         if any(s in cmd for s in UNSAFE_SHELL):
             passthrough()  # compound/redirected — require manual approval
+        if cmd in STANDARDS_CMDS:
+            allow("spec-implement loop: read-only standards composition")
         if any(cmd.startswith(p) for p in safe_prefixes):
             allow("spec-implement loop: safe workflow command")
         passthrough()

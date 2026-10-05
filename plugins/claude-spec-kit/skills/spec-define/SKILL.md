@@ -36,8 +36,9 @@ Before interviewing, ensure the project is configured. Check for
 
 - **If it exists**, read it: you need `spec_dir`, `ticket_regex`,
   `commit_prefix`, and `standards_file` (if the key is absent from an older
-  config, take the value `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py"
-  --resolve` reports).
+  config, it is detected; the first line of
+  `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --standards` shows the
+  layers in effect).
 - **If it is missing**, this is first use. Run the bundled detector to propose a
   config, e.g.:
   `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --print-example` *(if the
@@ -216,10 +217,10 @@ user asks.
 
 All acceptance criteria use **Given-When-Then**. Every template starts with the
 ticket id (or title only, if no ticket) and a one-line title. Bug, Feature, and
-Refactor specs add one line under the title, `Standards: <standards_file, or
-"none found">`, so the user sees which coding-standards doc
-`spec-implement`'s `standards-reviewer` will apply and can correct it in
-config. Do not ask about it in the interview.
+Refactor specs add one line under the title, `Standards: <the "Layers:" line
+from --standards, e.g. "base + .claude/docs/coding-standard.md">`, so the user
+sees which rules `spec-implement`'s `standards-reviewer` will apply and can
+change them in that file. Do not ask about it in the interview.
 
 ### Shared block — "Affected files & interfaces"
 Embedded by Bug, Feature, and Refactor. Keep it at the right altitude, and keep

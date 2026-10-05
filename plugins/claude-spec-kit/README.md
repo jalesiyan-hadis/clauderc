@@ -17,9 +17,11 @@ loop:
 - **`spec-reviewer`** — a read-only conformance agent that checks the diff
   delivers exactly what was approved.
 - **`standards-reviewer`** — a read-only agent that runs alongside
-  `spec-reviewer` and checks the diff against your coding-standards doc plus a
-  fixed list of twelve code smells. Every finding must name what the fix
-  removes; smells are fixed or listed as deferred and never block the loop.
+  `spec-reviewer` and checks the diff against the plugin's base coding
+  standard layered with your repo's own rules (see
+  [Coding standards](#coding-standards)). Every finding must name what the fix
+  removes; base-rule findings are fixed or listed as deferred and never block
+  the loop.
 - **Optional autonomous loop** — once you approve the plan, hooks drive
   implementation to "green + reviewed + committed" without further prompts.
 
@@ -69,6 +71,33 @@ Add these to your project's `.gitignore`:
 .claude/spec/                # generated specs (local working artifacts)
 .claude/.spec-loop/          # loop runtime state
 ```
+
+## Coding standards
+
+`standards-reviewer` applies two layers:
+
+1. **Base** — [`standards/base.md`](./standards/base.md), shipped with the
+   plugin: twelve code smells, each with a stable id (`duplicated-code`,
+   `speculative-generality`, …). Base findings are *fix or defer*.
+2. **Your repo** — the file `standards_file` points to (default detection:
+   `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
+   `.claude/docs/coding-standard.md`, `CONTRIBUTING.md`). Its body is your own
+   rules; they are *must fix* and win over the base on conflict. Optional
+   frontmatter adjusts the base:
+
+```markdown
+---
+extends: base                          # or "none" to drop the base entirely
+disable: [primitive-obsession]         # base rules that don't fit this repo
+enforce: [duplicated-code]             # base rules raised to must-fix here
+---
+- Use `pathlib`, never `os.path`.
+- Every public function has a docstring.
+```
+
+See what the reviewer will get with
+`python3 <plugin>/hooks/_config.py --standards --project .` — the first line
+lists the layers in effect, and unknown rule ids are flagged as warnings.
 
 ## Usage
 

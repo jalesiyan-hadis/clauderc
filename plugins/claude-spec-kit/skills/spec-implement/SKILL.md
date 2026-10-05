@@ -26,18 +26,17 @@ and formats commits. The keys you rely on:
 - `lint` — lint/format command run before committing.
 - `commit_prefix` — commit type prefix (default `feat`).
 - `ticket_regex` — to derive the ticket from the branch for commit scopes.
-- `standards_file` — the project's coding-standards doc for
-  `standards-reviewer` (may be null). If the key is absent from an older
-  config, use the value from
-  `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --resolve`, which detects it.
+- `standards_file` — the repo's own coding-standards doc (may be null; detected
+  if absent). It is layered over the plugin's base standard; you never read it
+  directly — see step 16.
 
 If the file is missing, this is first use: run the bundled detector
 (`hooks/_config.py` — `example_config(project_dir)`) to propose a config from the
 project's stack, show it, let the user confirm/tweak the commands, and write
 `.claude/spec-workflow.json`. **Without a runnable `test_fast`, the autonomous
 loop safe-disarms** (it will not gate), so do not skip this. Throughout this
-skill, wherever a value appears as `{test_fast}`, `{test_full}`, `{lint}`, or
-`{standards_file}`, substitute the resolved config value.
+skill, wherever a command appears as `{test_fast}`, `{test_full}`, or `{lint}`,
+substitute the resolved config value.
 
 Derive the commit message format: `{commit_prefix}({ticket}): <desc>` when a
 ticket matches the branch, else `{commit_prefix}: <desc>` (Conventional Commits).
@@ -198,14 +197,16 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
       (the working diff or base ref). It reports ONLY gaps affecting
       correctness or stated requirements, one per line as `GAP: <file:line> —
       <what's missing or out of scope>`, or the single line `NO ISSUES`.
-    - **`standards-reviewer`** — shape. Give it `DIFF` and `STANDARDS` (the
-      contents of `{standards_file}`, or `none` if unset). It reports
+    - **`standards-reviewer`** — shape. Give it `DIFF` and `STANDARDS`: the
+      full output of `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py"
+      --standards` (run exactly that command; it is read-only and
+      auto-approved while the loop is armed). It reports
       `SMELL: <file:line> — [standard|baseline|judgement] <name>: … → removes:
       …`, or `NO ISSUES`.
     Then:
     - Fix every `GAP`.
-    - Fix every `[standard]` smell (a violation of the project's own documented
-      rules).
+    - Fix every `[standard]` smell (a MUST FIX rule: the repo's own rules and
+      base rules it enforces).
     - Fix each `[baseline]` smell or list it under "Deferred smells" in the
       final report; list every `[judgement]` smell there too. A smell never
       blocks Done.

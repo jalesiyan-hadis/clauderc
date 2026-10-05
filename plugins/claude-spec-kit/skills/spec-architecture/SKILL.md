@@ -33,8 +33,10 @@ Depth is about **fewer things to know**, not bigger files and not more parts. A
 ## Phase 0 — Config
 
 Read `.claude/spec-workflow.json` if present for `spec_dir` (default
-`.claude/spec`) and `standards_file`. Do not write a config here; if it is
-missing, use the defaults and say so.
+`.claude/spec`). Do not write a config here; if it is missing, use the default
+and say so. Run `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --standards`
+for the effective coding standard and pass it to the scan agent: candidates
+that would violate a MUST FIX rule are dropped.
 
 ## Phase 1 — Pick the hot spots
 
@@ -92,7 +94,7 @@ commit it). Create the dir if missing. Shape:
 ```
 # Architecture scan — <date>
 Scope: <spec path | directory | git hot spots, last 30 days>
-Standards: <standards_file or "none found">
+Standards: <the "Layers:" line from --standards>
 
 ## Top recommendation
 <candidate name> — <one line why this one first>

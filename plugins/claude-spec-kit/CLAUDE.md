@@ -24,6 +24,7 @@ plugin into a scratch project and exercising the workflow.
 | `skills/spec-architecture/SKILL.md` | User-invoked only (`disable-model-invocation`). Out-of-loop scan → ranked deepening candidates in `<spec_dir>/architecture-<date>.md`. Never edits code; hands off to spec-define as a Refactor. |
 | `agents/spec-reviewer.md` | Read-only conformance reviewer. Sonnet-pinned. Emits `GAP:` lines or `NO ISSUES`. |
 | `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer. Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
+| `standards/base.md` | Base coding standard: the twelve smells as `### <id> — <Name>` blocks. Repos layer their own `standards_file` over it; `_config.compose_standards()` / `_config.py --standards` does the merge. Keep ids stable — repos reference them. |
 | `hooks/hooks.json` | Wires the 4 hooks via `${CLAUDE_PLUGIN_ROOT}`. |
 | `hooks/_config.py` | **Single source of project-specific values.** Everything coupling-related lives here. |
 | `hooks/spec_loop_arm.py` | `PostToolUse(ExitPlanMode)` — arms the loop iff the approved plan carries `<!-- spec-implement-loop -->`. |
