@@ -13,7 +13,7 @@ content + small Python scripts — there is
 no application and no pytest suite. "Testing" a change means installing the
 plugin into a scratch project and exercising the workflow.
 
-## Architecture — the 7 artifacts
+## Architecture — the artifacts
 
 | Path | Role |
 |------|------|
@@ -21,7 +21,10 @@ plugin into a scratch project and exercising the workflow.
 | (monorepo) `../../.claude-plugin/marketplace.json` | The `clauderc` monorepo marketplace lists this plugin with `source: "./plugins/claude-spec-kit"`. No marketplace.json lives in this plugin dir. |
 | `skills/spec-define/SKILL.md` | Interview → one agent-optimized spec. No hooks; its only side effect is writing one spec file. |
 | `skills/spec-implement/SKILL.md` | Gated TDD workflow. Phase 1 is the single human checkpoint; Phases 2-3 run autonomously when the loop is armed. |
+| `skills/spec-architecture/SKILL.md` | User-invoked only (`disable-model-invocation`). Out-of-loop scan → ranked deepening candidates in `<spec_dir>/architecture-<date>.md`. Never edits code; hands off to spec-define as a Refactor. |
 | `agents/spec-reviewer.md` | Read-only conformance reviewer. Sonnet-pinned. Emits `GAP:` lines or `NO ISSUES`. |
+| `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer. Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
+| `standards/base.md` | Base coding standard: the twelve smells as `### <id> — <Name>` blocks. Repos layer their own `standards_file` over it; `_config.compose_standards()` / `_config.py --standards` does the merge. Keep ids stable — repos reference them. |
 | `hooks/hooks.json` | Wires the 4 hooks via `${CLAUDE_PLUGIN_ROOT}`. |
 | `hooks/_config.py` | **Single source of project-specific values.** Everything coupling-related lives here. |
 | `hooks/spec_loop_arm.py` | `PostToolUse(ExitPlanMode)` — arms the loop iff the approved plan carries `<!-- spec-implement-loop -->`. |
@@ -72,7 +75,7 @@ All git-ignored in the consuming project.
 1. `/plugin marketplace add <local path or owner/repo>` then install.
 2. In a scratch Python project (with `pyproject.toml`): run `spec-define`,
    confirm first-run config write; run `spec-implement`, approve a plan, confirm
-   the loop arms, drives to green, runs the reviewer, commits, and disarms.
+   the loop arms, drives to green, runs both reviewers, commits, and disarms.
 3. In a project with NO config and an unknown stack: confirm the loop
    safe-disarms (allows stop) instead of wedging.
 4. In a normal session (no armed plan): confirm no hook auto-approves or lints.

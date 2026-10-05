@@ -1,7 +1,7 @@
 # claude-spec-kit
 
 Spec-driven development for [Claude Code](https://code.claude.com), packaged as
-a plugin. It gives you two skills, one agent, and an optional autonomous TDD
+a plugin. It gives you three skills, two agents, and an optional autonomous TDD
 loop:
 
 - **`/claude-spec-kit:spec-define`** — an interview-driven skill that turns a
@@ -10,8 +10,18 @@ loop:
 - **`/claude-spec-kit:spec-implement`** — turns a spec into a reviewed plan +
   approved test scenarios (one human gate), then implements TDD-style until the
   full suite is green with no regressions.
+- **`/claude-spec-kit:spec-architecture`** — an out-of-loop scan that looks
+  for shallow modules in an area of the code (or the files a spec will touch)
+  and writes a ranked report of refactor candidates. It never edits code; you
+  turn the chosen candidate into its own Refactor spec with `spec-define`.
 - **`spec-reviewer`** — a read-only conformance agent that checks the diff
   delivers exactly what was approved.
+- **`standards-reviewer`** — a read-only agent that runs alongside
+  `spec-reviewer` and checks the diff against the plugin's base coding
+  standard layered with your repo's own rules (see
+  [Coding standards](#coding-standards)). Every finding must name what the fix
+  removes; base-rule findings are fixed or listed as deferred and never block
+  the loop.
 - **Optional autonomous loop** — once you approve the plan, hooks drive
   implementation to "green + reviewed + committed" without further prompts.
 
@@ -43,13 +53,16 @@ which you confirm or tweak. You can also create it by hand from
   "ticket_regex":  "[A-Z]{2,}-\\d+",               // parse ticket from branch
   "safe_bash_prefixes": ["git add", "git commit", "poetry run pytest", "..."],
   "protected_paths": [".env", "migrations/"],
-  "spec_dir": ".claude/spec"
+  "spec_dir": ".claude/spec",
+  "standards_file": "CODING_STANDARDS.md"     // for standards-reviewer; auto-detected
 }
 ```
 
 Every key is optional. Omitted keys are auto-detected from your project manifest
 (`pyproject.toml` → poetry/pytest, `package.json` → npm, `go.mod` → go,
-`Cargo.toml` → cargo) or fall back to built-in defaults.
+`Cargo.toml` → cargo) or fall back to built-in defaults. `standards_file` is
+detected from `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
+`.claude/docs/coding-standard.md`, then `CONTRIBUTING.md`; it stays `null` if none exist.
 
 Add these to your project's `.gitignore`:
 
@@ -58,6 +71,33 @@ Add these to your project's `.gitignore`:
 .claude/spec/                # generated specs (local working artifacts)
 .claude/.spec-loop/          # loop runtime state
 ```
+
+## Coding standards
+
+`standards-reviewer` applies two layers:
+
+1. **Base** — [`standards/base.md`](./standards/base.md), shipped with the
+   plugin: twelve code smells, each with a stable id (`duplicated-code`,
+   `speculative-generality`, …). Base findings are *fix or defer*.
+2. **Your repo** — the file `standards_file` points to (default detection:
+   `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
+   `.claude/docs/coding-standard.md`, `CONTRIBUTING.md`). Its body is your own
+   rules; they are *must fix* and win over the base on conflict. Optional
+   frontmatter adjusts the base:
+
+```markdown
+---
+extends: base                          # or "none" to drop the base entirely
+disable: [primitive-obsession]         # base rules that don't fit this repo
+enforce: [duplicated-code]             # base rules raised to must-fix here
+---
+- Use `pathlib`, never `os.path`.
+- Every public function has a docstring.
+```
+
+See what the reviewer will get with
+`python3 <plugin>/hooks/_config.py --standards --project .` — the first line
+lists the layers in effect, and unknown rule ids are flagged as warnings.
 
 ## Usage
 
@@ -70,6 +110,27 @@ claude "/claude-spec-kit:spec-implement .claude/spec/<your-spec>.md"
 ```
 
 `spec-define` prints the exact `spec-implement` command when it finishes.
+
+### When to run `spec-architecture`
+
+It is **not** part of any ticket's Done, and the implement loop never runs it.
+Run it yourself:
+
+- **before a large Feature spec**, pointed at that spec, to ask "how do we make
+  this change easy?" — `/claude-spec-kit:spec-architecture .claude/spec/<spec>.md`;
+- **periodically on active areas** (every week or two) —
+  `/claude-spec-kit:spec-architecture src/billing/`, or with no argument to scan
+  the most-changed files of the last 30 days.
+
+`spec-define` also offers a scoped version of the scan while writing a Feature
+or Refactor spec, when the change touches 3+ files for one concept or proposes
+a new module. If a Strong candidate comes back and you choose to do it first,
+the spec records a `Preparatory refactor:` line and the handoff prints the
+refactor's `spec-define` command before the `spec-implement` one.
+
+Every candidate it reports has to delete something (merged modules, removed
+pass-throughs, retired tests); candidates that would add structure are dropped
+before the report. The report is written to `<spec_dir>/architecture-<date>.md`.
 
 ## The autonomous loop (opt-in by design)
 

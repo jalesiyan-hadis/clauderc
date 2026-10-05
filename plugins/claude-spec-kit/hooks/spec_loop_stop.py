@@ -117,19 +117,26 @@ def main() -> None:
     if not tests_green:
         block(
             f"spec-implement loop active: the fast suite (`{cfg['test_fast']}`) is "
-            "NOT green. "
-            "Continue Phase 3 — implement to green WITHOUT modifying the committed "
-            f"tests. Latest output tail:\n{tail}"
+            "NOT green. If a mutation-smoke-check edit is still in place, revert "
+            "it first. Otherwise continue Phase 3 — implement to green WITHOUT "
+            "modifying the committed tests (only the step-13 exception may "
+            "strengthen a tautological assertion). "
+            f"Latest output tail:\n{tail}"
         )
 
     block(
         "spec-implement loop active: the fast suite is green but the workflow is "
-        f"not finished. Now (1) run the full regression gate `{full_cmd}` and "
-        "paste its output, (2) run the spec-reviewer subagent until it returns "
-        "NO ISSUES and fix any gaps, "
-        + (f"(3) run `{lint_cmd}` and " if lint_cmd else "(3) ")
-        + "commit the implementation, then (4) as your FINAL action create the "
-        "marker file `.claude/.spec-loop/complete`."
+        "not finished. Now (1) apply the step-12 refactor criteria (small "
+        "cleanups only; defer structural changes to Architecture follow-ups), "
+        "(2) run the step-13 mutation smoke check and revert the mutation, "
+        f"(3) run the full regression gate `{full_cmd}` and paste its output, "
+        "(4) run spec-reviewer and standards-reviewer in parallel, fix every "
+        "GAP and every [standard] smell, fix or list other smells under "
+        "Deferred smells, and re-run spec-reviewer until it returns NO ISSUES, "
+        + (f"(5) run `{lint_cmd}` and " if lint_cmd else "(5) ")
+        + "commit the implementation, then (6) report the Concepts added / "
+        "removed line and as your FINAL action create the marker file "
+        "`.claude/.spec-loop/complete`."
     )
 
 
