@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to .claude/spec-workflow.json in your project and edit. All keys are optional; anything omitted is auto-detected from your project's manifest (pyproject.toml / package.json / go.mod / Cargo.toml) or falls back to a built-in default. If no key and no recognized stack supply a runnable test_fast, the autonomous loop safe-disarms. standards_file (the coding-standards doc standards-reviewer applies) is detected from CODING_STANDARDS.md, .claude/docs/coding-standards.md, .claude/docs/coding-standard.md, then CONTRIBUTING.md; null if none exist. It is layered over the plugin's standards/base.md; its frontmatter can set extends (base|none), disable and enforce (base rule ids).",
+  "_comment": "Copy to .claude/spec-workflow.json in your project and edit. All keys are optional; anything omitted is auto-detected from your project's manifest (pyproject.toml / package.json / go.mod / Cargo.toml) or falls back to a built-in default. If no key and no recognized stack supply a runnable test_fast, the autonomous loop safe-disarms. standards_file (the coding-standards doc standards-reviewer applies) is detected from CODING_STANDARDS.md, .claude/docs/coding-standards.md, .claude/docs/coding-standard.md, then CONTRIBUTING.md; null if none exist. It is layered over the plugin's standards/base.md; its frontmatter can set extends (base|none), disable and enforce (base rule ids). The review block is read only by review-assist: a list given here replaces the default list; review_guide is detected from .claude/docs/review-guide.md then REVIEW.md when unset; retro_root defaults to ~/.claude/retro_review.",
   "test_fast": "poetry run pytest -q -x",
   "test_full": "poetry run pytest --cov",
   "lint": "poetry run pre-commit run --all-files",
@@ -19,5 +19,11 @@
   ],
   "protected_paths": [".env", "migrations/", "credentials", "service-account"],
   "spec_dir": ".claude/spec",
-  "standards_file": "CODING_STANDARDS.md"
+  "standards_file": "CODING_STANDARDS.md",
+  "review": {
+    "risk_paths": ["**/migrations/**", "**/auth/**", "**/permissions/**", "**/billing/**", "infra/**", "**/*secret*"],
+    "skim_paths": ["**/*.lock", "**/package-lock.json", "**/pnpm-lock.yaml", "**/go.sum", "**/generated/**"],
+    "review_guide": ".claude/docs/review-guide.md",
+    "retro_root": "~/.claude/retro_review"
+  }
 }

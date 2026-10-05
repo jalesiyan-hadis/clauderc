@@ -22,15 +22,18 @@ plugin into a scratch project and exercising the workflow.
 | `skills/spec-define/SKILL.md` | Interview → one agent-optimized spec. No hooks; its only side effect is writing one spec file. |
 | `skills/spec-implement/SKILL.md` | Gated TDD workflow. Phase 1 is the single human checkpoint; Phases 2-3 run autonomously when the loop is armed. |
 | `skills/spec-architecture/SKILL.md` | User-invoked only (`disable-model-invocation`). Out-of-loop scan → ranked deepening candidates in `<spec_dir>/architecture-<date>.md`. Never edits code; hands off to spec-define as a Refactor. |
+| `skills/review-assist/SKILL.md` | User-invoked only (`disable-model-invocation`). Guided GitLab MR review: checks the MR out in a `git worktree`, runs `/code-review <range>` + `standards-reviewer`, writes `review.html` and `retro.md` under `~/.claude/retro_review/<repo>/<iid>-<date>/`. Never posts to GitLab or Jira; never passes `--comment`/`--fix`. |
 | `agents/spec-reviewer.md` | Read-only conformance reviewer. Sonnet-pinned. Emits `GAP:` lines or `NO ISSUES`. |
-| `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer. Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
+| `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer and by review-assist on an MR range (optional `REVIEW_GUIDE` input, treated as MUST FIX). Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
 | `standards/base.md` | Base coding standard: the twelve smells as `### <id> — <Name>` blocks. Repos layer their own `standards_file` over it; `_config.compose_standards()` / `_config.py --standards` does the merge. Keep ids stable — repos reference them. |
-| `hooks/hooks.json` | Wires the 4 hooks via `${CLAUDE_PLUGIN_ROOT}`. |
+| `standards/testing.md` | The four test rules (`assert-through-seam`, `no-recomputed-expected`, `mock-boundaries-only`, `one-behaviour-per-test`), read with `base.md` as part of the base; applied to test hunks only. Ids must be unique across both files (`_base_rules()` raises on a duplicate). |
+| `hooks/hooks.json` | Wires the 5 hooks via `${CLAUDE_PLUGIN_ROOT}`. |
 | `hooks/_config.py` | **Single source of project-specific values.** Everything coupling-related lives here. |
 | `hooks/spec_loop_arm.py` | `PostToolUse(ExitPlanMode)` — arms the loop iff the approved plan carries `<!-- spec-implement-loop -->`. |
 | `hooks/spec_loop_stop.py` | `Stop` — deterministic test gate; blocks stop until green + completion marker. |
 | `hooks/spec_loop_gate.py` | `PreToolUse` — auto-approves only known-safe ops while armed. |
 | `hooks/spec_loop_lint.py` | `PostToolUse(Edit\|Write)` — lint-on-save, **armed-loop-only** (no-op otherwise). |
+| `hooks/review_retro_save.py` | `SessionEnd` — copies the transcript into a review-assist retro dir, **only** when that session left a marker (no-op otherwise). |
 | `spec-workflow.example.json` | Per-project config template users copy. |
 
 ## The two invariants that keep it safe
@@ -42,6 +45,10 @@ plugin into a scratch project and exercising the workflow.
    with this plugin installed is never auto-approved, never gated, never linted.
 2. **Session-scoped.** `active` stores the arming `session_id`; other concurrent
    sessions in the same project fall through to normal handling.
+
+`review_retro_save.py` keeps the same two invariants with its own marker: it
+does nothing unless `~/.claude/retro_review/.active/<session_id>.json` exists
+for the ending session.
 
 If you touch a hook, preserve both invariants. A hook that acts before the
 `active` check, or ignores `session_id`, will hijack unrelated sessions.
@@ -60,6 +67,12 @@ it to `_STACK_DEFAULTS` and `_detect_stack` only — nowhere else.
 `.claude/.spec-loop/active` (armed + session id) · `iter` (iteration counter,
 capped by `MAX_ITERS` in `spec_loop_stop.py`) · `complete` (model's done-marker).
 All git-ignored in the consuming project.
+
+review-assist keeps its state in the user's home, not the project:
+`~/.claude/retro_review/<repo>/<iid>-<date>/` (`review.html`, `retro.md`,
+`transcript.jsonl`, and the `worktree/` until removed) and the session marker
+`~/.claude/retro_review/.active/<session_id>.json` (deleted by the SessionEnd
+hook).
 
 ## Conventions when editing
 

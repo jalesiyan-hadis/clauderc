@@ -1,7 +1,7 @@
 # claude-spec-kit
 
 Spec-driven development for [Claude Code](https://code.claude.com), packaged as
-a plugin. It gives you three skills, two agents, and an optional autonomous TDD
+a plugin. It gives you four skills, two agents, and an optional autonomous TDD
 loop:
 
 - **`/claude-spec-kit:spec-define`** — an interview-driven skill that turns a
@@ -14,6 +14,11 @@ loop:
   for shallow modules in an area of the code (or the files a spec will touch)
   and writes a ranked report of refactor candidates. It never edits code; you
   turn the chosen candidate into its own Refactor spec with `spec-define`.
+- **`/claude-spec-kit:review-assist <gitlab-mr-url>`** — prepares a guided
+  review of a GitLab merge request as a local HTML file (intent, reading order,
+  findings, diagrams, what the AI did not check), then walks you through each
+  finding. It never posts anything to GitLab or Jira. See
+  [Reviewing a merge request](#reviewing-a-merge-request).
 - **`spec-reviewer`** — a read-only conformance agent that checks the diff
   delivers exactly what was approved.
 - **`standards-reviewer`** — a read-only agent that runs alongside
@@ -54,7 +59,13 @@ which you confirm or tweak. You can also create it by hand from
   "safe_bash_prefixes": ["git add", "git commit", "poetry run pytest", "..."],
   "protected_paths": [".env", "migrations/"],
   "spec_dir": ".claude/spec",
-  "standards_file": "CODING_STANDARDS.md"     // for standards-reviewer; auto-detected
+  "standards_file": "CODING_STANDARDS.md",    // for standards-reviewer; auto-detected
+  "review": {                                  // review-assist only; all keys optional
+    "risk_paths": ["**/migrations/**", "**/auth/**"],   // tagged 🔴 must read
+    "skim_paths": ["**/*.lock", "**/generated/**"],     // tagged 🟢 skim
+    "review_guide": ".claude/docs/review-guide.md",     // free-text review practices
+    "retro_root": "~/.claude/retro_review"              // where review logs go
+  }
 }
 ```
 
@@ -78,7 +89,10 @@ Add these to your project's `.gitignore`:
 
 1. **Base** — [`standards/base.md`](./standards/base.md), shipped with the
    plugin: twelve code smells, each with a stable id (`duplicated-code`,
-   `speculative-generality`, …). Base findings are *fix or defer*.
+   `speculative-generality`, …), plus four test rules in
+   [`standards/testing.md`](./standards/testing.md) (`assert-through-seam`,
+   `no-recomputed-expected`, `mock-boundaries-only`, `one-behaviour-per-test`)
+   that are checked on test code only. Base findings are *fix or defer*.
 2. **Your repo** — the file `standards_file` points to (default detection:
    `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
    `.claude/docs/coding-standard.md`, `CONTRIBUTING.md`). Its body is your own
@@ -132,10 +146,47 @@ Every candidate it reports has to delete something (merged modules, removed
 pass-throughs, retired tests); candidates that would add structure are dropped
 before the report. The report is written to `<spec_dir>/architecture-<date>.md`.
 
+## Reviewing a merge request
+
+```shell
+/claude-spec-kit:review-assist https://gitlab.example.com/group/project/-/merge_requests/123
+```
+
+Run it from a checkout of the MR's repository, with `glab` installed and
+authenticated. It:
+
+1. reads the MR with `glab` and checks it out in a separate `git worktree`
+   (your current branch is never touched);
+2. takes the intent from the Jira ticket (key found in the MR title or branch,
+   read-only via the Atlassian MCP) and the MR description;
+3. builds a change map with a reading order, tagging each group 🔴 must read,
+   🟡 careful or 🟢 skim;
+4. runs `/code-review` on the range (never with `--comment` or `--fix`) and
+   `standards-reviewer` with your coding standard, test rules and review guide,
+   in parallel, and checks the intent against what the diff does;
+5. writes `review.html` with the findings, diagrams where they help, a test
+   assessment and a **not checked by AI** list (security, performance, UX and
+   business correctness always appear there);
+6. walks you through each finding (accept / reject / edit). Accepted findings
+   become draft comments for you to copy and post yourself.
+
+Every review is logged to `~/.claude/retro_review/<repo>/<iid>-<date>/`:
+`review.html`, a `retro.md` with your decisions and counts per source, and the
+session transcript (copied by a `SessionEnd` hook that only acts for review
+sessions). At the end it offers to remove the worktree.
+
+The `review` config block is optional. Each list you set **replaces** the
+default list. `review_guide` is for review practices that aren't code-shape
+rules (e.g. "every migration needs a rollback note"); when unset, it is
+detected from `.claude/docs/review-guide.md`, then `REVIEW.md`. See the
+effective values with `python3 <plugin>/hooks/_config.py --review --project .`.
+It works in repos with no test command too.
+
 ## The autonomous loop (opt-in by design)
 
 The loop is **dormant until you arm it**. Installing the plugin registers four
-hooks, but they do nothing in normal sessions. The loop only activates when you
+loop hooks (plus review-assist's `SessionEnd` hook), but they do nothing in
+normal sessions. The loop only activates when you
 approve a `spec-implement` plan — that plan carries a sentinel
 (`<!-- spec-implement-loop -->`), and approving it (an explicit human action)
 arms the loop *for that session only*.
