@@ -1,7 +1,7 @@
 # claude-spec-kit
 
 Spec-driven development for [Claude Code](https://code.claude.com), packaged as
-a plugin. It gives you two skills, one agent, and an optional autonomous TDD
+a plugin. It gives you three skills, two agents, and an optional autonomous TDD
 loop:
 
 - **`/claude-spec-kit:spec-define`** — an interview-driven skill that turns a
@@ -10,6 +10,10 @@ loop:
 - **`/claude-spec-kit:spec-implement`** — turns a spec into a reviewed plan +
   approved test scenarios (one human gate), then implements TDD-style until the
   full suite is green with no regressions.
+- **`/claude-spec-kit:spec-architecture`** — an out-of-loop scan that looks
+  for shallow modules in an area of the code (or the files a spec will touch)
+  and writes a ranked report of refactor candidates. It never edits code; you
+  turn the chosen candidate into its own Refactor spec with `spec-define`.
 - **`spec-reviewer`** — a read-only conformance agent that checks the diff
   delivers exactly what was approved.
 - **`standards-reviewer`** — a read-only agent that runs alongside
@@ -77,6 +81,21 @@ claude "/claude-spec-kit:spec-implement .claude/spec/<your-spec>.md"
 ```
 
 `spec-define` prints the exact `spec-implement` command when it finishes.
+
+### When to run `spec-architecture`
+
+It is **not** part of any ticket's Done, and the implement loop never runs it.
+Run it yourself:
+
+- **before a large Feature spec**, pointed at that spec, to ask "how do we make
+  this change easy?" — `/claude-spec-kit:spec-architecture .claude/spec/<spec>.md`;
+- **periodically on active areas** (every week or two) —
+  `/claude-spec-kit:spec-architecture src/billing/`, or with no argument to scan
+  the most-changed files of the last 30 days.
+
+Every candidate it reports has to delete something (merged modules, removed
+pass-throughs, retired tests); candidates that would add structure are dropped
+before the report. The report is written to `<spec_dir>/architecture-<date>.md`.
 
 ## The autonomous loop (opt-in by design)
 

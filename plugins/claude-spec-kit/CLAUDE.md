@@ -21,6 +21,7 @@ plugin into a scratch project and exercising the workflow.
 | (monorepo) `../../.claude-plugin/marketplace.json` | The `clauderc` monorepo marketplace lists this plugin with `source: "./plugins/claude-spec-kit"`. No marketplace.json lives in this plugin dir. |
 | `skills/spec-define/SKILL.md` | Interview → one agent-optimized spec. No hooks; its only side effect is writing one spec file. |
 | `skills/spec-implement/SKILL.md` | Gated TDD workflow. Phase 1 is the single human checkpoint; Phases 2-3 run autonomously when the loop is armed. |
+| `skills/spec-architecture/SKILL.md` | User-invoked only (`disable-model-invocation`). Out-of-loop scan → ranked deepening candidates in `<spec_dir>/architecture-<date>.md`. Never edits code; hands off to spec-define as a Refactor. |
 | `agents/spec-reviewer.md` | Read-only conformance reviewer. Sonnet-pinned. Emits `GAP:` lines or `NO ISSUES`. |
 | `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer. Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
 | `hooks/hooks.json` | Wires the 4 hooks via `${CLAUDE_PLUGIN_ROOT}`. |

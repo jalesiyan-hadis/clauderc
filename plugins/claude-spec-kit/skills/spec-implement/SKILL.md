@@ -232,6 +232,8 @@ The final report also includes:
   justification in the approved plan, flag it explicitly. This is a visibility
   measure, not a gate.
 - An "Architecture follow-ups" list, if step 12 deferred anything structural.
+  These are inputs for a later `/claude-spec-kit:spec-architecture` run, not
+  work for this loop.
 - A "Deferred smells" list with the `[baseline]` and `[judgement]` findings
   from step 16 that were not fixed, if any.
 

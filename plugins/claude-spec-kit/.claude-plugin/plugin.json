@@ -1,7 +1,7 @@
 {
   "name": "claude-spec-kit",
-  "description": "Spec-driven development for Claude Code: an interview-driven spec-define skill, a gated TDD spec-implement skill with an optional autonomous completion loop, a read-only spec-reviewer conformance agent, and a read-only standards-reviewer agent.",
-  "version": "0.5.0",
+  "description": "Spec-driven development for Claude Code: an interview-driven spec-define skill, a gated TDD spec-implement skill with an optional autonomous completion loop, an out-of-loop spec-architecture scan, a read-only spec-reviewer conformance agent, and a read-only standards-reviewer agent.",
+  "version": "0.6.0",
   "author": {
     "name": "Hadis Jalesiyan"
   },
