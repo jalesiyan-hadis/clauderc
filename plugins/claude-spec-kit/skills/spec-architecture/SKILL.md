@@ -1,6 +1,6 @@
 ---
 name: spec-architecture
-description: Scan an area of the codebase (or the files a spec will touch) for shallow modules that are hard to change or test, and write a ranked report of "deepening" refactor candidates — each one must delete something. Never edits code; the chosen candidate becomes its own Refactor spec via spec-define. Run before a large Feature spec or periodically on active areas, not as part of any ticket's Done.
+description: Scan an area of the codebase (or the files a spec will touch) for shallow modules that are hard to change or test, and write a ranked report of "deepening" refactor candidates — each one must delete something. Never edits code; the chosen candidate becomes its own Refactor spec via spec-define. Run before a large Feature spec or periodically on active areas, not as part of any ticket's Done. (spec-define can offer a scoped version of this scan while writing a Feature or Refactor spec.)
 argument-hint: "[optional: spec path or directory]"
 disable-model-invocation: true
 ---

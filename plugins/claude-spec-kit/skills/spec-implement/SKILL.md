@@ -53,7 +53,9 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
    up front.
 2. Verify the spec's assumptions against the actual code. Quote the current
    signature of any helper the spec claims is reusable. Flag every mismatch
-   between spec and reality, and every outdated or ambiguous item.
+   between spec and reality, and every outdated or ambiguous item. If the spec
+   has a `Preparatory refactor:` line, check whether that refactor has landed;
+   if it hasn't, ask the user whether to proceed before planning.
 3. **Challenge the spec's proposed implementation — don't inherit it.** The
    spec describes the *problem* authoritatively, but its suggested *approach*
    is just one option; validate the approach, not only the assumptions. Before

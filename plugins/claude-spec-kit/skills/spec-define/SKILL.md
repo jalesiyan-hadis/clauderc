@@ -168,6 +168,32 @@ two places. "Will need it later" never counts. Never add a port, interface,
 protocol, or dependency-injection parameter with only one implementation —
 production code plus a test stand-in counts as two; one alone does not.
 
+### Architecture scan offer (Feature and Refactor only)
+
+Sometimes the cheapest way to build a feature is to first make the change easy.
+Offer a scoped architecture scan — don't run it unasked — when the gate above
+shows friction:
+- the concept being changed touches **3 or more files**, or
+- the approach proposes a **new module**.
+
+Never offer it for a Bug or a Spike.
+
+If the user accepts, read `${CLAUDE_PLUGIN_ROOT}/skills/spec-architecture/SKILL.md`
+and follow its **Vocabulary**, **Phase 2 (scan)** and **Phase 3 (filter)**
+yourself, with the hot spots limited to the files this spec will touch plus
+their direct callers. Do not write its report file; summarise the surviving
+candidates in the conversation. (`spec-architecture` itself stays
+user-invoked only.)
+
+If a **Strong** candidate survives, ask (with your recommendation) whether to
+do it as a preparatory refactor first:
+- **Yes:** record it in the spec as one line under the title,
+  `Preparatory refactor: <candidate> — <files> — spec it first`, keep this
+  spec's approach as it would be *after* that refactor, and change the handoff
+  (Phase 6).
+- **No:** carry on as planned, and note the candidate under Open Questions &
+  Assumptions so it isn't lost.
+
 ## Phase 4 — Playback & confirm (stopping gate)
 
 Replay the fully assembled spec to the user. Stop interviewing only when ALL of:
@@ -197,7 +223,15 @@ session. With no confirmation to read, the agent can mistake that for failure
 and retry, spawning window after window. A printed one-liner avoids all of that
 and costs the user a single paste.
 
-Print this, substituting the real absolute project dir and spec path:
+If the spec has a `Preparatory refactor:` line, first print the command that
+specs the refactor, and say it should be specified, implemented and merged
+before this spec is implemented:
+
+```
+cd <ABS_PROJECT_DIR> && claude "/claude-spec-kit:spec-define refactor: <candidate> — prepares <spec-path>"
+```
+
+Then print this, substituting the real absolute project dir and spec path:
 
 ```
 cd <ABS_PROJECT_DIR> && claude "/claude-spec-kit:spec-implement <spec-path>"

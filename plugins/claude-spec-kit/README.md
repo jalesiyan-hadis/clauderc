@@ -122,6 +122,12 @@ Run it yourself:
   `/claude-spec-kit:spec-architecture src/billing/`, or with no argument to scan
   the most-changed files of the last 30 days.
 
+`spec-define` also offers a scoped version of the scan while writing a Feature
+or Refactor spec, when the change touches 3+ files for one concept or proposes
+a new module. If a Strong candidate comes back and you choose to do it first,
+the spec records a `Preparatory refactor:` line and the handoff prints the
+refactor's `spec-define` command before the `spec-implement` one.
+
 Every candidate it reports has to delete something (merged modules, removed
 pass-throughs, retired tests); candidates that would add structure are dropped
 before the report. The report is written to `<spec_dir>/architecture-<date>.md`.
