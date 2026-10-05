@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to .claude/spec-workflow.json in your project and edit. All keys are optional; anything omitted is auto-detected from your project's manifest (pyproject.toml / package.json / go.mod / Cargo.toml) or falls back to a built-in default. If no key and no recognized stack supply a runnable test_fast, the autonomous loop safe-disarms. standards_file (the coding-standards doc standards-reviewer applies) is detected from CODING_STANDARDS.md, docs/coding-standards.md, docs/coding-standard.md, then CONTRIBUTING.md; null if none exist.",
+  "_comment": "Copy to .claude/spec-workflow.json in your project and edit. All keys are optional; anything omitted is auto-detected from your project's manifest (pyproject.toml / package.json / go.mod / Cargo.toml) or falls back to a built-in default. If no key and no recognized stack supply a runnable test_fast, the autonomous loop safe-disarms. standards_file (the coding-standards doc standards-reviewer applies) is detected from CODING_STANDARDS.md, .claude/docs/coding-standards.md, .claude/docs/coding-standard.md, then CONTRIBUTING.md; null if none exist.",
   "test_fast": "poetry run pytest -q -x",
   "test_full": "poetry run pytest --cov",
   "lint": "poetry run pre-commit run --all-files",

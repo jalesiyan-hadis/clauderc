@@ -52,8 +52,8 @@ _BASE_DEFAULTS = {
 # is often about PR process rather than code.
 _STANDARDS_CANDIDATES = (
     "CODING_STANDARDS.md",
-    "docs/coding-standards.md",
-    "docs/coding-standard.md",
+    ".claude/docs/coding-standards.md",
+    ".claude/docs/coding-standard.md",
     "CONTRIBUTING.md",
 )
 

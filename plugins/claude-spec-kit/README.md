@@ -59,8 +59,8 @@ which you confirm or tweak. You can also create it by hand from
 Every key is optional. Omitted keys are auto-detected from your project manifest
 (`pyproject.toml` → poetry/pytest, `package.json` → npm, `go.mod` → go,
 `Cargo.toml` → cargo) or fall back to built-in defaults. `standards_file` is
-detected from `CODING_STANDARDS.md`, `docs/coding-standards.md`,
-`docs/coding-standard.md`, then `CONTRIBUTING.md`; it stays `null` if none exist.
+detected from `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
+`.claude/docs/coding-standard.md`, then `CONTRIBUTING.md`; it stays `null` if none exist.
 
 Add these to your project's `.gitignore`:
 
