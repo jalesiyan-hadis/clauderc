@@ -18,6 +18,9 @@ of `_STANDARDS_CANDIDATES` that exists, else ``None``. `compose_standards()`
 layers it over the plugin's base rules, `standards/base.md` + `standards/testing.md`
 (see that function).
 
+`review_config()` resolves the optional `review` block that the review-assist
+skill reads (risk/skim path globs, the review guide, the retro log root).
+
 If there is NO config file AND no recognized manifest, `resolve()` returns
 ``None`` — the signal for the loop hooks to **safe-disarm** (behave as if the
 plugin were not installed) rather than wedge an unconfigured project.
@@ -62,6 +65,31 @@ _STANDARDS_CANDIDATES = (
     ".claude/docs/coding-standard.md",
     "CONTRIBUTING.md",
 )
+
+# Defaults for the `review` block (review-assist). A repo's list replaces the
+# default list rather than merging with it, so a repo can narrow it.
+_REVIEW_DEFAULTS = {
+    "risk_paths": [
+        "**/migrations/**",
+        "**/auth/**",
+        "**/permissions/**",
+        "**/billing/**",
+        "infra/**",
+        "**/*secret*",
+    ],
+    "skim_paths": [
+        "**/*.lock",
+        "**/package-lock.json",
+        "**/pnpm-lock.yaml",
+        "**/go.sum",
+        "**/generated/**",
+    ],
+    "retro_root": "~/.claude/retro_review",
+}
+
+# Review-guide docs (free-text review practices), in priority order, used when
+# `review.review_guide` is unset.
+_REVIEW_GUIDE_CANDIDATES = (".claude/docs/review-guide.md", "REVIEW.md")
 
 # Per-stack auto-detected command defaults. Each entry supplies the test/lint
 # commands; the base defaults above fill in the rest.
@@ -199,6 +227,33 @@ def _standards_file_for(proj: pathlib.Path) -> Optional[str]:
     return _detect_standards_file(proj)
 
 
+def review_config(proj: pathlib.Path) -> dict:
+    """Effective `review` block for ``proj``, with defaults filled in.
+
+    Read directly rather than via resolve(), so a repo with no test command
+    (whose loop would safe-disarm) can still be reviewed. `review_guide` is the
+    configured path, else the first existing `_REVIEW_GUIDE_CANDIDATES` entry,
+    else None; `review_guide_found` says whether that file exists.
+    """
+    proj = pathlib.Path(proj)
+    user_review: dict = {}
+    cfg_path = proj / CONFIG_REL
+    if cfg_path.exists():
+        try:
+            user_review = json.loads(cfg_path.read_text(encoding="utf-8")).get("review") or {}
+        except (OSError, ValueError, AttributeError):
+            user_review = {}
+    out = {k: (list(v) if isinstance(v, list) else v) for k, v in _REVIEW_DEFAULTS.items()}
+    out.update(user_review)
+    guide = out.get("review_guide")
+    if not guide:
+        guide = next((rel for rel in _REVIEW_GUIDE_CANDIDATES if (proj / rel).is_file()), None)
+    out["review_guide"] = guide
+    out["review_guide_found"] = bool(guide) and (proj / guide).is_file()
+    out["retro_root"] = str(pathlib.Path(out["retro_root"]).expanduser())
+    return out
+
+
 def _split_frontmatter(text: str) -> tuple:
     """Return ({key: str | list}, body) for a minimal YAML-style frontmatter.
 
@@ -328,6 +383,11 @@ if __name__ == "__main__":
         help="Print the effective coding standard (base + the repo's standards_file).",
     )
     parser.add_argument(
+        "--review",
+        action="store_true",
+        help="Print the effective review block (review-assist), with defaults filled in.",
+    )
+    parser.add_argument(
         "--project",
         default=os.environ.get("CLAUDE_PROJECT_DIR", "."),
         help="Project root (defaults to $CLAUDE_PROJECT_DIR or cwd).",
@@ -336,6 +396,8 @@ if __name__ == "__main__":
     proj = pathlib.Path(ns.project)
     if ns.standards:
         print(compose_standards(proj), end="")
+    elif ns.review:
+        print(json.dumps(review_config(proj), indent=2))
     elif ns.resolve:
         print(json.dumps(resolve(proj), indent=2))
     else:

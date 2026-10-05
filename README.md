@@ -9,7 +9,8 @@ A personal [Claude Code](https://claude.com/claude-code) plugin marketplace. Two
   TDD `spec-implement` with an optional autonomous completion loop, and two read-only
   reviewers: `spec-reviewer` (conformance) and `standards-reviewer` (coding standards and
   code smells), plus an out-of-loop `spec-architecture` scan that proposes refactor
-  candidates without editing code.
+  candidates without editing code, and `review-assist`, a guided GitLab MR review that
+  prepares a local HTML review and never posts anything.
 
 Everything here is generic and reusable. The author's own org/machine-specific values
 (Jira board, team IDs, vault paths) live outside this repo in a single gitignored config file
@@ -30,7 +31,8 @@ Or, from a local checkout:
 ```
 
 Commands after install: `/clauderc:scratch-list`, `/clauderc:scratch-save`,
-`/clauderc:create-jira-ticket`, `/claude-spec-kit:spec-define`, `/claude-spec-kit:spec-implement`.
+`/clauderc:create-jira-ticket`, `/claude-spec-kit:spec-define`, `/claude-spec-kit:spec-implement`,
+`/claude-spec-kit:spec-architecture`, `/claude-spec-kit:review-assist`.
 
 ## Configuration — `~/.claude/clauderc.private.json`
 
