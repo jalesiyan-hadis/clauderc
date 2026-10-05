@@ -127,6 +127,12 @@ minimalism. Avoiding over-engineering is a non-negotiable goal of this skill: th
 spec must NEVER inherit the first solution that comes to mind — an over-engineered
 spec forces costly back-and-forth later in `spec-implement`.
 
+Minimal means **minimal in concepts, not in diff lines**: the fewest files,
+public symbols, layers, and options a reader must learn. For a Bug those
+usually coincide (the smallest diff wins). For a Feature or Refactor, scattering
+new logic across existing call sites keeps the diff small but adds concepts
+everywhere; a single module behind a small interface can be the simpler design.
+
 Ask these out loud (one per turn, with your recommendation) and resolve them
 before writing:
 
@@ -137,13 +143,27 @@ before writing:
 2. **Can we change an existing invariant or bound** (e.g. widen a loop bound,
    relax a too-narrow condition) instead of **adding a new enforcement step,
    method, or call-site**? Local edit beats new stage.
-3. **Is the new method / class / pipeline step actually load-bearing**, or is
-   this a one-line edit to existing code? Smallest viable change wins.
+3. Depends on the task type:
+   - **Bug and Spike:** **Is the new method / class / pipeline step actually
+     load-bearing**, or is this a one-line edit to existing code? Smallest
+     viable change wins.
+   - **Feature and Refactor — the deletion test:** if the new module were
+     deleted, where would its complexity reappear? If it would reappear across
+     several callers, the module earns its place. If the answer is "nowhere,
+     it just passes calls through", the spec must not create it.
 
-If, after these questions, you still propose a *new* method/pass/call-site, the
-spec must record in one line **why a local edit to existing code won't work**.
-That justification is mandatory — it is the artifact `spec-implement` checks the
-approach against, instead of discovering the simpler fix mid-implementation.
+Justification the spec must record (it is the artifact `spec-implement` checks
+the approach against, instead of discovering the simpler fix mid-implementation):
+- **Bug / Spike:** if you still propose a *new* method/pass/call-site, one line
+  on **why a local edit to existing code won't work**.
+- **Feature / Refactor:** if you propose a *new* module, its one-line deletion
+  test result.
+
+For every type: a new file, public symbol, layer, or config option is only
+justified if it pulls together complexity that currently exists in at least
+two places. "Will need it later" never counts. Never add a port, interface,
+protocol, or dependency-injection parameter with only one implementation —
+production code plus a test stand-in counts as two; one alone does not.
 
 ## Phase 4 — Playback & confirm (stopping gate)
 
@@ -152,8 +172,8 @@ the template is fully covered, the user confirms the playback, new questions
 stop yielding new facts, and no undefined term or unresolved assumption remains
 (any leftover goes to Open Questions & Assumptions). When playing back the
 proposed approach, state explicitly that **this is the simplest approach
-considered** (per Phase 3.5) and let the user ratify that, not just the
-requirements. Get explicit confirmation before writing.
+considered** (per Phase 3.5 — fewest concepts, not fewest lines), name the seam
+tests will cross, and let the user ratify that, not just the requirements. Get explicit confirmation before writing.
 
 ## Phase 5 — Write the spec
 
@@ -198,8 +218,14 @@ ticket id (or title only, if no ticket) and a one-line title.
 ### Shared block — "Affected files & interfaces"
 Embedded by Bug, Feature, and Refactor. Keep it at the right altitude, and keep
 it **minimal** — describe the smallest viable change that satisfies Phase 3.5,
-not the first design that came to mind. If you list a *new* method/class/pass,
-include the one-line "why a local edit won't work" justification.
+not the first design that came to mind. If you list anything *new*, include its
+Phase 3.5 justification (Bug/Spike: why a local edit won't work; Feature/
+Refactor: the deletion test).
+
+The **seam** is the one interface that callers and tests cross. Tests are
+written against it and nothing behind it, so internals can change freely
+without breaking them. Default to an existing function as the seam; a new
+module as the seam is the exception and must pass Phase 3.5.
 
 ```
 ## Affected files & interfaces
@@ -207,7 +233,12 @@ include the one-line "why a local edit won't work" justification.
 - `path/to/file.ext` — <what changes here — prefer editing existing code>
 - Key signatures (current or proposed):
   - `fn foo(x: T) -> R`  — <role>
-  - (If proposing anything NEW: one line on why an edit to existing code can't do it)
+  - (If proposing anything NEW: its Phase 3.5 justification)
+- Seam under test: existing seam: `fn foo(x: T) -> R`   (or a new one + why)
+- What stays behind it: <helpers/collaborators that are implementation, not
+  interface — tests do not target these>
+- Deletion test (new module only): <if deleted, where would its complexity
+  reappear? "nowhere" → don't create it>
 - Pattern to imitate: `path/to/similar.ext` (<why it's the right model>)
 ```
 
@@ -235,6 +266,8 @@ include the one-line "why a local edit won't work" justification.
 ## Acceptance criteria
 - Given <precondition>, When <action>, Then <expected outcome>.
 - (include the failing case and at least one adjacent edge case)
+- (expected outcomes are literal values or worked examples — never "same as
+  current" or "whatever X returns")
 
 ## Regression-test note
 <which test encodes the fix; which existing suite must stay green>
@@ -267,7 +300,9 @@ As a <role>, I want <capability>, so that <benefit>.
 
 ## Test mapping
 <1:1 baseline: each acceptance criterion → one test scenario.
- spec-implement may expand, not drop.>
+ spec-implement may expand, not drop. Scenarios go through the seam, and
+ expected values are literals or worked examples from this spec — never
+ "same as current".>
 
 ## Non-functional constraints
 <versions, performance, security, conventions — omit if none>
@@ -297,7 +332,9 @@ listed here.
 <Inspect whether the code being refactored is already covered by tests.>
 - Covered by: `tests/...` (these MUST stay green), OR
 - NOT covered → define characterization tests below as GWT so spec-implement
-  writes them FIRST, before refactoring, to lock current behavior:
+  writes them FIRST, before refactoring, to lock current behavior
+  (characterisation: intentionally locks in current output — the one place
+  "same as current" is the expected value):
   - Given <current input>, When <call>, Then <current output>.
 
 ## Acceptance criteria

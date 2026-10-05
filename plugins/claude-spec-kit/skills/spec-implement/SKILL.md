@@ -62,8 +62,18 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
      parent/values.
    - Prefer **widening or correcting an existing invariant** (e.g. a too-narrow
      loop bound) over adding a new enforcement step or normalization stage.
-   - A one-line change at an existing write site beats a new method + new call
-     site + extra tests. Plan the smallest change that fully fixes the bug.
+   - **Bug:** a one-line change at an existing write site beats a new method +
+     new call site + extra tests. Plan the smallest change that fully fixes the
+     bug.
+   - **Feature / Refactor:** minimal means fewest concepts, not fewest lines.
+     Apply the deletion test to any new module (if deleted, would its
+     complexity reappear across several callers? If not, it's a pass-through —
+     don't create it), but don't scatter new logic across call sites just to
+     keep the diff small.
+   - Any type: no new file, public symbol, layer, or config option unless it
+     pulls together complexity that exists in at least two places today; no
+     port/interface/DI parameter with a single implementation (production + a
+     test stand-in counts as two).
    If the spec's approach is heavier than the minimal fix, plan the minimal fix
    and note in the plan why it supersedes the spec's suggestion.
 4. If anything is ambiguous, ASK the user now — this is the only phase where
@@ -76,11 +86,16 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
      per turn so the user ratifies rather than drafting from scratch.
 5. Produce a plan covering:
    - Files created/modified, with per-file changes.
-   - New function signatures and the data flow between them.
+   - **Interface (seam under test):** the one interface callers and tests
+     cross, with its signature. Default to an existing function; a new one
+     needs the deletion-test justification from step 3.
+   - **Internal signatures:** helpers behind the seam and the data flow between
+     them. These may change freely during Phase 3; tests never target them.
    - How regressions are checked and which existing suites run.
 6. Produce explicit **test scenarios** for the developer to approve: for each
    behavior, the case name, the input/precondition, and the expected outcome
-   (including edge cases and failure paths). These are the contract the tests
+   as a literal value or worked example (including edge cases and failure
+   paths), all exercised through the seam. These are the contract the tests
    will encode — the developer must sign off on them, not just the plan.
 7. Present the plan and the test scenarios together via ExitPlanMode. Include
    the literal line `<!-- spec-implement-loop -->` at the END of the plan text —
@@ -94,9 +109,10 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
 8. Write tests first for every approved scenario. Encode exactly the approved
    cases — no extra scope. Tests must check **behavior**, not structure, so a
    refactor that keeps behavior never breaks them:
-   - **Assert observable outcomes through the interface** callers use. Never
-     assert call counts, call order, or private state, and never query a side
-     channel (e.g. the database) to verify what the interface itself can return.
+   - **Assert observable outcomes through the seam** named in the plan, never
+     against internal signatures behind it. Never assert call counts, call
+     order, or private state, and never query a side channel (e.g. the
+     database) to verify what the seam itself can return.
    - **Expected values come from the spec or a worked literal** — never
      recomputed the way the code computes them. A test that re-derives its
      expected value repeats the implementation's logic and passes by
@@ -163,10 +179,11 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
     then commit it on its own: `test(<ticket>): strengthen assertions`. Never
     add new tests or test infrastructure here — strengthen, don't multiply.
 14. If implementation reveals the approved plan or scenarios were wrong, STOP.
-    A material deviation — new/removed files, changed public signatures, or any
-    dropped/added requirement or scenario — requires re-gating: return to plan
-    mode (Phase 1) and get re-approval. Trivial local refactors that don't
-    change the contract do not.
+    A material deviation — new/removed files, a changed seam (the interface
+    tests cross), or any dropped/added requirement or scenario — requires
+    re-gating: return to plan mode (Phase 1) and get re-approval. Changes to
+    internal signatures behind the seam, and trivial local refactors that don't
+    change the contract, do not.
 15. Run the FULL suite as the regression gate. Paste the exact command and full
     output: `{test_full}`
 16. Spawn the **`spec-reviewer`** subagent (Agent tool). It is read-only and
