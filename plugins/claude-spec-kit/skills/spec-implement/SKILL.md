@@ -113,21 +113,24 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
 
 8. Write tests first for every approved scenario. Encode exactly the approved
    cases — no extra scope. Tests must check **behavior**, not structure, so a
-   refactor that keeps behavior never breaks them:
-   - **Assert observable outcomes through the seam** named in the plan, never
-     against internal signatures behind it. Never assert call counts, call
-     order, or private state, and never query a side channel (e.g. the
-     database) to verify what the seam itself can return.
-   - **Expected values come from the spec or a worked literal** — never
-     recomputed the way the code computes them. A test that re-derives its
-     expected value repeats the implementation's logic and passes by
-     construction. (Exception: Refactor characterisation tests, which
-     intentionally lock in current output.)
-   - **Mock only at boundaries you don't own** — external APIs, the clock,
-     randomness, the network. Do not mock your own modules or internal
-     collaborators, and never the thing under test. Prefer a real stand-in
-     (temp dir, in-memory DB) over a mock where one exists.
-   - **One behavior per test**; the test name says what behavior, not how.
+   refactor that keeps behavior never breaks them. The first four rules below
+   are also base standard rules (`standards/testing.md`), which
+   `standards-reviewer` checks the tests against by id in step 16:
+   - `assert-through-seam` — **Assert observable outcomes through the seam**
+     named in the plan, never against internal signatures behind it. Never
+     assert call counts, call order, or private state, and never query a side
+     channel (e.g. the database) to verify what the seam itself can return.
+   - `no-recomputed-expected` — **Expected values come from the spec or a
+     worked literal**, never recomputed the way the code computes them. A test
+     that re-derives its expected value repeats the implementation's logic and
+     passes by construction. (Exception: Refactor characterisation tests,
+     which intentionally lock in current output.)
+   - `mock-boundaries-only` — **Mock only at boundaries you don't own**:
+     external APIs, the clock, randomness, the network. Do not mock your own
+     modules or internal collaborators, and never the thing under test. Prefer
+     a real stand-in (temp dir, in-memory DB) over a mock where one exists.
+   - `one-behaviour-per-test` — **One behavior per test**; the test name says
+     what behavior, not how.
    - No stubbed-out imaginary code. Traceability (AC ids, ticket ids, scenario
      numbers) belongs in the plan/spec test-mapping table and in descriptive
      test names — **never in code comments or docstrings**. Keep comments short

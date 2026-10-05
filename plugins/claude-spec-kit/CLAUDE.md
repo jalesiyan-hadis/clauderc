@@ -25,6 +25,7 @@ plugin into a scratch project and exercising the workflow.
 | `agents/spec-reviewer.md` | Read-only conformance reviewer. Sonnet-pinned. Emits `GAP:` lines or `NO ISSUES`. |
 | `agents/standards-reviewer.md` | Read-only standards/smell reviewer, run in parallel with spec-reviewer. Sonnet-pinned. Emits `SMELL:` lines or `NO ISSUES`; never blocks Done. |
 | `standards/base.md` | Base coding standard: the twelve smells as `### <id> — <Name>` blocks. Repos layer their own `standards_file` over it; `_config.compose_standards()` / `_config.py --standards` does the merge. Keep ids stable — repos reference them. |
+| `standards/testing.md` | The four test rules (`assert-through-seam`, `no-recomputed-expected`, `mock-boundaries-only`, `one-behaviour-per-test`), read with `base.md` as part of the base; applied to test hunks only. Ids must be unique across both files (`_base_rules()` raises on a duplicate). |
 | `hooks/hooks.json` | Wires the 4 hooks via `${CLAUDE_PLUGIN_ROOT}`. |
 | `hooks/_config.py` | **Single source of project-specific values.** Everything coupling-related lives here. |
 | `hooks/spec_loop_arm.py` | `PostToolUse(ExitPlanMode)` — arms the loop iff the approved plan carries `<!-- spec-implement-loop -->`. |

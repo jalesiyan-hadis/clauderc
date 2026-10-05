@@ -34,6 +34,12 @@ against the effective coding standard you are given?
   base rules). Base rules have ids such as `duplicated-code`; rules the repo
   disabled are already left out, so never report them.
 
+The base includes four **test rules** (`assert-through-seam`,
+`no-recomputed-expected`, `mock-boundaries-only`, `one-behaviour-per-test`,
+from `standards/testing.md`). Apply them to **test hunks only** (files under a
+test directory or named like tests in the repo's convention), never to
+production code.
+
 If `DIFF` or `STANDARDS` is missing, output a single line:
 `SMELL: inputs — missing DIFF / STANDARDS; cannot review`
 and stop.
@@ -44,7 +50,8 @@ and treat names that contradict it as Mysterious Name.
 ## Rules that keep findings honest
 
 - **Every finding names what gets smaller.** It ends with
-  `→ removes: <duplication | branch | parameter | file | layer>`. A finding
+  `→ removes: <duplication | branch | parameter | file | layer | mock |
+  recomputed value | structural assertion>`. A finding
   that cannot name a reduction is dropped, not reported.
 - **Additions are checked for over-engineering first.** On any hunk that adds
   a class, layer, interface, or indirection, evaluate Speculative Generality

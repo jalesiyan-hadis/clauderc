@@ -78,7 +78,10 @@ Add these to your project's `.gitignore`:
 
 1. **Base** — [`standards/base.md`](./standards/base.md), shipped with the
    plugin: twelve code smells, each with a stable id (`duplicated-code`,
-   `speculative-generality`, …). Base findings are *fix or defer*.
+   `speculative-generality`, …), plus four test rules in
+   [`standards/testing.md`](./standards/testing.md) (`assert-through-seam`,
+   `no-recomputed-expected`, `mock-boundaries-only`, `one-behaviour-per-test`)
+   that are checked on test code only. Base findings are *fix or defer*.
 2. **Your repo** — the file `standards_file` points to (default detection:
    `CODING_STANDARDS.md`, `.claude/docs/coding-standards.md`,
    `.claude/docs/coding-standard.md`, `CONTRIBUTING.md`). Its body is your own

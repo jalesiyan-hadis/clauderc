@@ -15,7 +15,8 @@ order:
 `standards_file` (the project's coding-standards doc, read by the
 standards-reviewer agent) is detected by file presence, not by stack: the first
 of `_STANDARDS_CANDIDATES` that exists, else ``None``. `compose_standards()`
-layers it over the plugin's `standards/base.md` (see that function).
+layers it over the plugin's base rules, `standards/base.md` + `standards/testing.md`
+(see that function).
 
 If there is NO config file AND no recognized manifest, `resolve()` returns
 ``None`` — the signal for the loop hooks to **safe-disarm** (behave as if the
@@ -32,7 +33,9 @@ import re
 from typing import Optional
 
 CONFIG_REL = ".claude/spec-workflow.json"
-BASE_STANDARDS = pathlib.Path(__file__).resolve().parent.parent / "standards" / "base.md"
+_STANDARDS_DIR = pathlib.Path(__file__).resolve().parent.parent / "standards"
+# Base rule files, in output order. Rule ids must be unique across all of them.
+BASE_STANDARDS = (_STANDARDS_DIR / "base.md", _STANDARDS_DIR / "testing.md")
 
 # Keys every consumer can rely on existing once resolve() returns a dict.
 _BASE_DEFAULTS = {
@@ -226,13 +229,16 @@ def _split_frontmatter(text: str) -> tuple:
 
 
 def _base_rules() -> list:
-    """[(id, block_text)] from standards/base.md, in file order."""
-    text = BASE_STANDARDS.read_text(encoding="utf-8")
-    parts = re.split(r"^### ", text, flags=re.M)[1:]
-    rules = []
-    for part in parts:
-        rule_id = part.split(" ", 1)[0].strip()
-        rules.append((rule_id, "### " + part.strip()))
+    """[(id, block_text)] from the BASE_STANDARDS files, in file order."""
+    rules, seen = [], set()
+    for path in BASE_STANDARDS:
+        text = path.read_text(encoding="utf-8")
+        for part in re.split(r"^### ", text, flags=re.M)[1:]:
+            rule_id = part.split(" ", 1)[0].strip()
+            if rule_id in seen:
+                raise ValueError(f"duplicate base rule id {rule_id!r} in {path.name}")
+            seen.add(rule_id)
+            rules.append((rule_id, "### " + part.strip()))
     return rules
 
 
