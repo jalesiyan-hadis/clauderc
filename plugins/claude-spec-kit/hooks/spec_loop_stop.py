@@ -130,8 +130,9 @@ def main() -> None:
         "cleanups only; defer structural changes to Architecture follow-ups), "
         "(2) run the step-13 mutation smoke check and revert the mutation, "
         f"(3) run the full regression gate `{full_cmd}` and paste its output, "
-        "(4) run the spec-reviewer subagent until it returns NO ISSUES and fix "
-        "any gaps, "
+        "(4) run spec-reviewer and standards-reviewer in parallel, fix every "
+        "GAP and every [standard] smell, fix or list other smells under "
+        "Deferred smells, and re-run spec-reviewer until it returns NO ISSUES, "
         + (f"(5) run `{lint_cmd}` and " if lint_cmd else "(5) ")
         + "commit the implementation, then (6) report the Concepts added / "
         "removed line and as your FINAL action create the marker file "

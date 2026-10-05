@@ -26,14 +26,18 @@ and formats commits. The keys you rely on:
 - `lint` — lint/format command run before committing.
 - `commit_prefix` — commit type prefix (default `feat`).
 - `ticket_regex` — to derive the ticket from the branch for commit scopes.
+- `standards_file` — the project's coding-standards doc for
+  `standards-reviewer` (may be null). If the key is absent from an older
+  config, use the value from
+  `python3 "${CLAUDE_PLUGIN_ROOT}/hooks/_config.py" --resolve`, which detects it.
 
 If the file is missing, this is first use: run the bundled detector
 (`hooks/_config.py` — `example_config(project_dir)`) to propose a config from the
 project's stack, show it, let the user confirm/tweak the commands, and write
 `.claude/spec-workflow.json`. **Without a runnable `test_fast`, the autonomous
 loop safe-disarms** (it will not gate), so do not skip this. Throughout this
-skill, wherever a command appears as `{test_fast}`, `{test_full}`, or `{lint}`,
-substitute the resolved config value.
+skill, wherever a value appears as `{test_fast}`, `{test_full}`, `{lint}`, or
+`{standards_file}`, substitute the resolved config value.
 
 Derive the commit message format: `{commit_prefix}({ticket}): <desc>` when a
 ticket matches the branch, else `{commit_prefix}: <desc>` (Conventional Commits).
@@ -186,13 +190,28 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
     change the contract, do not.
 15. Run the FULL suite as the regression gate. Paste the exact command and full
     output: `{test_full}`
-16. Spawn the **`spec-reviewer`** subagent (Agent tool). It is read-only and
-    encodes the gap contract itself. Give it `APPROVED_PLAN` (the approved plan),
-    `APPROVED_SCENARIOS` (the approved test scenarios), and `DIFF` (the working
-    diff or base ref). It reports ONLY gaps affecting correctness or stated
-    requirements, one per line as `GAP: <file:line> — <what's missing or out of
-    scope>`, or the single line `NO ISSUES` when clean.
-    Fix every reported gap and re-review until it returns `NO ISSUES`.
+16. Spawn two read-only reviewers **in parallel** (two Agent calls in one
+    message). They judge different things, so report their findings side by
+    side under separate headings; never merge them into one list.
+    - **`spec-reviewer`** — conformance. Give it `APPROVED_PLAN` (the approved
+      plan), `APPROVED_SCENARIOS` (the approved test scenarios), and `DIFF`
+      (the working diff or base ref). It reports ONLY gaps affecting
+      correctness or stated requirements, one per line as `GAP: <file:line> —
+      <what's missing or out of scope>`, or the single line `NO ISSUES`.
+    - **`standards-reviewer`** — shape. Give it `DIFF` and `STANDARDS` (the
+      contents of `{standards_file}`, or `none` if unset). It reports
+      `SMELL: <file:line> — [standard|baseline|judgement] <name>: … → removes:
+      …`, or `NO ISSUES`.
+    Then:
+    - Fix every `GAP`.
+    - Fix every `[standard]` smell (a violation of the project's own documented
+      rules).
+    - Fix each `[baseline]` smell or list it under "Deferred smells" in the
+      final report; list every `[judgement]` smell there too. A smell never
+      blocks Done.
+    - Re-run `{test_fast}`, then re-run `spec-reviewer` until it returns
+      `NO ISSUES`. `standards-reviewer` runs once per implementation; do not
+      loop on it.
 17. Run the linter and commit the implementation:
     `{lint}`
     `{commit_prefix}(<ticket>): implement <feature>`
@@ -202,7 +221,8 @@ Enter plan mode (EnterPlanMode) so this phase is read-only and tool-enforced.
 Report done ONLY when: implementation matches the approved plan and scenarios,
 the full suite is green with no regressions, new tests exist and pass, the
 step-12 refactor criteria were applied, the mutation smoke check (step 13) was
-performed, and the reviewer returned `NO ISSUES`. Show the `{test_full}`
+performed, `spec-reviewer` returned `NO ISSUES`, and `standards-reviewer` ran
+with every `[standard]` finding fixed. Show the `{test_full}`
 command and its full output as evidence — never assert success without it. Do
 NOT push or open a PR/MR; leave that to the developer.
 
@@ -212,6 +232,8 @@ The final report also includes:
   justification in the approved plan, flag it explicitly. This is a visibility
   measure, not a gate.
 - An "Architecture follow-ups" list, if step 12 deferred anything structural.
+- A "Deferred smells" list with the `[baseline]` and `[judgement]` findings
+  from step 16 that were not fixed, if any.
 
 As your FINAL action, create the marker file `.claude/.spec-loop/complete` (its
 contents don't matter). This signals the completion loop that the workflow is

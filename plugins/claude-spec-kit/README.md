@@ -12,6 +12,10 @@ loop:
   full suite is green with no regressions.
 - **`spec-reviewer`** — a read-only conformance agent that checks the diff
   delivers exactly what was approved.
+- **`standards-reviewer`** — a read-only agent that runs alongside
+  `spec-reviewer` and checks the diff against your coding-standards doc plus a
+  fixed list of twelve code smells. Every finding must name what the fix
+  removes; smells are fixed or listed as deferred and never block the loop.
 - **Optional autonomous loop** — once you approve the plan, hooks drive
   implementation to "green + reviewed + committed" without further prompts.
 
@@ -43,13 +47,16 @@ which you confirm or tweak. You can also create it by hand from
   "ticket_regex":  "[A-Z]{2,}-\\d+",               // parse ticket from branch
   "safe_bash_prefixes": ["git add", "git commit", "poetry run pytest", "..."],
   "protected_paths": [".env", "migrations/"],
-  "spec_dir": ".claude/spec"
+  "spec_dir": ".claude/spec",
+  "standards_file": "CODING_STANDARDS.md"     // for standards-reviewer; auto-detected
 }
 ```
 
 Every key is optional. Omitted keys are auto-detected from your project manifest
 (`pyproject.toml` → poetry/pytest, `package.json` → npm, `go.mod` → go,
-`Cargo.toml` → cargo) or fall back to built-in defaults.
+`Cargo.toml` → cargo) or fall back to built-in defaults. `standards_file` is
+detected from `CODING_STANDARDS.md`, `docs/coding-standards.md`,
+`docs/coding-standard.md`, then `CONTRIBUTING.md`; it stays `null` if none exist.
 
 Add these to your project's `.gitignore`:
 

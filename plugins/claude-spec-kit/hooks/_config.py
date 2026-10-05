@@ -12,6 +12,10 @@ order:
      go.mod / Cargo.toml), then
   3. built-in defaults for any keys still missing.
 
+`standards_file` (the project's coding-standards doc, read by the
+standards-reviewer agent) is detected by file presence, not by stack: the first
+of `_STANDARDS_CANDIDATES` that exists, else ``None``.
+
 If there is NO config file AND no recognized manifest, `resolve()` returns
 ``None`` — the signal for the loop hooks to **safe-disarm** (behave as if the
 plugin were not installed) rather than wedge an unconfigured project.
@@ -43,6 +47,15 @@ _BASE_DEFAULTS = {
     "protected_paths": [".env", ".env.", "credentials", "service-account"],
     "spec_dir": ".claude/spec",
 }
+
+# Coding-standards docs, in priority order. CONTRIBUTING.md is last because it
+# is often about PR process rather than code.
+_STANDARDS_CANDIDATES = (
+    "CODING_STANDARDS.md",
+    "docs/coding-standards.md",
+    "docs/coding-standard.md",
+    "CONTRIBUTING.md",
+)
 
 # Per-stack auto-detected command defaults. Each entry supplies the test/lint
 # commands; the base defaults above fill in the rest.
@@ -110,6 +123,14 @@ def _detect_stack(proj: pathlib.Path) -> Optional[str]:
     return None
 
 
+def _detect_standards_file(proj: pathlib.Path) -> Optional[str]:
+    """First existing coding-standards doc (relative path), or None."""
+    for rel in _STANDARDS_CANDIDATES:
+        if (proj / rel).is_file():
+            return rel
+    return None
+
+
 def detect_defaults(proj: pathlib.Path) -> Optional[dict]:
     """Return auto-detected config for the project's stack, or None if unknown."""
     stack = _detect_stack(proj)
@@ -147,8 +168,11 @@ def resolve(proj: pathlib.Path) -> Optional[dict]:
         # ensure base-level keys exist
         for k, v in _BASE_DEFAULTS.items():
             merged.setdefault(k, v)
+        merged.setdefault("standards_file", _detect_standards_file(proj))
         return merged
 
+    if detected is not None:
+        detected["standards_file"] = _detect_standards_file(proj)
     return detected  # may be None -> safe-disarm
 
 
@@ -163,6 +187,7 @@ def example_config(proj: pathlib.Path) -> dict:
     out.setdefault("test_full", "<command to run the full/coverage suite>")
     out.setdefault("lint", "<command to run lint/format checks>")
     out.setdefault("lint_file", "<command to lint a single file: use {file}>")
+    out["standards_file"] = _detect_standards_file(proj)
     out.pop("_detected_stack", None)
     return out
 

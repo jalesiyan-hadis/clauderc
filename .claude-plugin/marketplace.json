@@ -13,7 +13,7 @@
     {
       "name": "claude-spec-kit",
       "source": "./plugins/claude-spec-kit",
-      "description": "Spec-driven development workflow: spec-define + spec-implement skills, spec-reviewer agent, and an optional autonomous TDD loop."
+      "description": "Spec-driven development workflow: spec-define + spec-implement skills, spec-reviewer and standards-reviewer agents, and an optional autonomous TDD loop."
     }
   ]
 }
